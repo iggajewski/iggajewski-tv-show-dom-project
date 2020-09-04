@@ -1,19 +1,21 @@
-//You can edit ALL of the code here
+const episodeList = getAllEpisodes();
+const rootElem = document.getElementById("root");
+const epNumSpan = document.getElementById("ep-num");
+
 function setup() {
-  const allEpisodes = getAllEpisodes();
-  makePageForEpisodes(allEpisodes);
+  makePageForEpisodes();
+
+  document.getElementById("search").addEventListener("submit", function(event) {
+    event.preventDefault();
+  });
+
+  document.getElementById("search").addEventListener("submit", displayFoundEpisodes);
 }
 
-function makePageForEpisodes(episodeList) {
-  const rootElem = document.getElementById("root");
-  rootElem.textContent = `Got ${episodeList.length} episode(s)`;
-
-  var episodesElem = document.createElement("div");
-  episodesElem.setAttribute("id", "main");
-  rootElem.appendChild(episodesElem);
-
+function makePageForEpisodes() {
+  epNumSpan.textContent = `${episodeList.length}/${episodeList.length}`;
   for(i = 0; i < episodeList.length; ++i) {
-    episodesElem.appendChild(createEpisodeElement(episodeList[i]));
+    rootElem.appendChild(createEpisodeElement(episodeList[i]));
   }
 }
 
@@ -47,5 +49,37 @@ function createEpisodeElement(episode) {
 
   return episodeDiv;
 }
+
+// FOR SEARCHING: //
+
+function displayFoundEpisodes() {
+  rootElem.innerHTML = "";
+
+  var keyword = document.getElementById("search-input").value;
+  var foundEpisodes = searchEpisodes(keyword);
+
+  epNumSpan.textContent = `${foundEpisodes.length}/${episodeList.length}`;
+  for(i = 0; i < foundEpisodes.length; ++i) {
+    rootElem.appendChild(createEpisodeElement(foundEpisodes[i]));
+  }
+}
+
+function searchEpisodes(keyword) {
+  if(keyword.length === 0) {
+    return episodeList;
+  }
+
+  keyword = keyword.toLowerCase();
+  var newEpisodeList = [];
+
+  for(i = 0; i < episodeList.length; ++i) {
+    var episodeDescription = episodeList[i].name.toLowerCase() + episodeList[i].summary.toLowerCase();
+    if(episodeDescription.includes(keyword)) {
+      newEpisodeList.push(episodeList[i])
+    }
+  }
+  return newEpisodeList;
+}
+
 
 window.onload = setup;
