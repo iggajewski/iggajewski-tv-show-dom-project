@@ -1,3 +1,50 @@
+body {
+  background-color: #f5f5f5;
+}
+
 #root {
   color: red;
+}
+
+#main {
+  display:flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.episode {
+  background-color: white;
+  color: black;
+  border-radius: 1rem;
+  margin: 1rem;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  max-width: 400px;
+  text-align: center;
+}
+
+.episode > h2 {
+  
+  padding: 1rem 2rem;
+  border: 1px solid black;
+  border-radius: 1rem;
+  margin: 0;
+}
+
+.episode > img {
+  padding-top: 2rem;
+}
+
+.episode > p {
+  text-align: left;
+  padding: 0 2rem 1rem 2rem;
+}
+
+#footer {
+  background-color: white;
+  border-top: 1px solid black;
+  margin-top: 3rem;
+}
+
+#footer > p {
+  margin-left: 1rem;
 }
