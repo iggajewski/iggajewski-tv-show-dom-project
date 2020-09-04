@@ -1,16 +1,28 @@
 const episodeList = getAllEpisodes();
+
+const searchElem = document.getElementById("search");
+const selectorElem = document.getElementById("episode-selector");
 const rootElem = document.getElementById("root");
 const epNumSpan = document.getElementById("ep-num");
 
 function setup() {
   makePageForEpisodes();
-  document.getElementById("search").addEventListener("keypress", displayFoundEpisodes);
+
+  searchElem.addEventListener("keydown", displayFoundEpisodes);
+
+  selectorElem.onchange = function() {
+    window.location.href = this.value;
+  }
 }
 
 function makePageForEpisodes() {
   epNumSpan.textContent = `${episodeList.length}/${episodeList.length}`;
   for(i = 0; i < episodeList.length; ++i) {
     rootElem.appendChild(createEpisodeElement(episodeList[i]));
+    selectorElem.innerHTML += 
+      `<option value="#${episodeList[i].id}">
+      S${formatNumber(episodeList[i].season)}E${formatNumber(episodeList[i].number)} - ${episodeList[i].name}
+      </option>`
   }
 }
 
@@ -45,13 +57,14 @@ function createEpisodeElement(episode) {
   return episodeDiv;
 }
 
+
 // FOR SEARCHING: //
 
 function displayFoundEpisodes() {
   rootElem.innerHTML = "";
-  console.log("inside event function");
 
-  var keyword = document.getElementById("search").value;
+  var keyword = searchElem.value;
+  console.log(keyword);
   var foundEpisodes = searchEpisodes(keyword);
 
   epNumSpan.textContent = `${foundEpisodes.length}/${episodeList.length}`;
