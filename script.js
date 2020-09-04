@@ -4,11 +4,6 @@ const epNumSpan = document.getElementById("ep-num");
 
 function setup() {
   makePageForEpisodes();
-
-  // document.getElementById("search").addEventListener("submit", function(event) {
-  //   event.preventDefault();
-  // });
-
   document.getElementById("search").addEventListener("keypress", displayFoundEpisodes);
 }
 
