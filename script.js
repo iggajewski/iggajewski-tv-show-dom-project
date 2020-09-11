@@ -1,21 +1,28 @@
-const episodeList = getAllEpisodes();
-
 const searchElem = document.getElementById("search");
 const selectorElem = document.getElementById("episode-selector");
 const rootElem = document.getElementById("root");
 const epNumSpan = document.getElementById("ep-num");
 
-function setup() {
-  makePageForEpisodes();
+async function setup() {
+  allEpisodes = await fetchEpisodes("https://api.tvmaze.com/shows/82/episodes");
+  makePageForEpisodes(allEpisodes);
 
-  searchElem.addEventListener("keydown", displayFoundEpisodes);
+  searchElem.addEventListener("input", displayFoundEpisodes);
 
   selectorElem.onchange = function() {
     window.location.href = this.value;
   }
 }
 
-function makePageForEpisodes() {
+async function fetchEpisodes(url) {
+  let jsonData;    
+  await fetch(url)
+    .then(response => response.json())
+    .then(json => jsonData = json)
+  return jsonData;
+}
+
+function makePageForEpisodes(episodeList) {
   epNumSpan.textContent = `${episodeList.length}/${episodeList.length}`;
   for(i = 0; i < episodeList.length; ++i) {
     rootElem.appendChild(createEpisodeElement(episodeList[i]));
@@ -61,11 +68,11 @@ function createEpisodeElement(episode) {
 // FOR SEARCHING: //
 
 function displayFoundEpisodes() {
+  const episodeList = allEpisodes;
   rootElem.innerHTML = "";
 
   var keyword = searchElem.value;
-  console.log(keyword);
-  var foundEpisodes = searchEpisodes(keyword);
+  var foundEpisodes = searchEpisodes(keyword, episodeList);
 
   epNumSpan.textContent = `${foundEpisodes.length}/${episodeList.length}`;
   for(i = 0; i < foundEpisodes.length; ++i) {
@@ -73,7 +80,7 @@ function displayFoundEpisodes() {
   }
 }
 
-function searchEpisodes(keyword) {
+function searchEpisodes(keyword, episodeList) {
   if(keyword.length === 0) {
     return episodeList;
   }
