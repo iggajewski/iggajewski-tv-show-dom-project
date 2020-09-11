@@ -1,18 +1,48 @@
+/* SETUP: */
+
+const showSelectorElem = document.getElementById("show-selector");
+const episodeSelectorElem = document.getElementById("episode-selector");
 const searchElem = document.getElementById("search");
-const selectorElem = document.getElementById("episode-selector");
 const rootElem = document.getElementById("root");
 const epNumSpan = document.getElementById("ep-num");
 
 async function setup() {
-  allEpisodes = await fetchEpisodes("https://api.tvmaze.com/shows/82/episodes");
-  makePageForEpisodes(allEpisodes);
+  allShows =  await fetchShows();
+  allEpisodes = await makePageForEpisodes(allShows[0]._links.self.href + "/episodes");
 
   searchElem.addEventListener("input", displayFoundEpisodes);
-
-  selectorElem.onchange = function() {
+  showSelectorElem.addEventListener("input", showSelection);
+  episodeSelectorElem.onchange = function() {
     window.location.href = this.value;
   }
 }
+
+window.onload = setup;
+
+
+/* FOR CREATING SHOW LIST: */
+
+function sortShows(show_a, show_b) {
+  let a_name = show_a.name.toLowerCase();
+  let b_name = show_b.name.toLowerCase();
+
+  if(a_name > b_name) return 1;
+  if(a_name < b_name) return -1;
+  return 0;
+}
+
+function fetchShows() {
+  let showArray = getAllShows();
+  showArray.sort(sortShows);
+
+  for (let i = 0; i < showArray.length; ++i) {
+    showSelectorElem.innerHTML += `<option value="#${showArray[i].id}">${showArray[i].name}</option>`;
+  } 
+  return showArray;
+}
+
+
+/* FOR CREATING EPISODE LISTS AND ELEMENTS: */
 
 async function fetchEpisodes(url) {
   let jsonData;    
@@ -22,18 +52,35 @@ async function fetchEpisodes(url) {
   return jsonData;
 }
 
-function makePageForEpisodes(episodeList) {
+async function makePageForEpisodes(url) {
+  rootElem.innerHTML = "";
+  episodeSelectorElem.innerHTML = "";
+
+  episodeList = await fetchEpisodes(url);
+
   epNumSpan.textContent = `${episodeList.length}/${episodeList.length}`;
-  for(i = 0; i < episodeList.length; ++i) {
+  for(let i = 0; i < episodeList.length; ++i) {
     rootElem.appendChild(createEpisodeElement(episodeList[i]));
-    selectorElem.innerHTML += 
+    episodeSelectorElem.innerHTML += 
       `<option value="#${episodeList[i].id}">
       S${formatNumber(episodeList[i].season)}E${formatNumber(episodeList[i].number)} - ${episodeList[i].name}
       </option>`
   }
+  return episodeList;
 }
 
-// FOR EPISODE DISPLAYING: //
+async function showSelection() {
+  for (let i = 0; i < allShows.length; ++i) {
+    if(`#${allShows[i].id}` == showSelectorElem.value) {
+      allEpisodes = await makePageForEpisodes(allShows[i]._links.self.href + "/episodes");
+      return;
+    }
+  }
+  console.log("ERROR: episode not found");
+}
+
+
+/* FOR INDIVIDUAL EPISODE DISPLAYING: */
 
 function formatNumber(number) {
   if (number < 10) {
@@ -65,7 +112,7 @@ function createEpisodeElement(episode) {
 }
 
 
-// FOR SEARCHING: //
+/* FOR SEARCHING: */
 
 function displayFoundEpisodes() {
   const episodeList = allEpisodes;
@@ -75,7 +122,7 @@ function displayFoundEpisodes() {
   var foundEpisodes = searchEpisodes(keyword, episodeList);
 
   epNumSpan.textContent = `${foundEpisodes.length}/${episodeList.length}`;
-  for(i = 0; i < foundEpisodes.length; ++i) {
+  for(let i = 0; i < foundEpisodes.length; ++i) {
     rootElem.appendChild(createEpisodeElement(foundEpisodes[i]));
   }
 }
@@ -88,7 +135,7 @@ function searchEpisodes(keyword, episodeList) {
   keyword = keyword.toLowerCase();
   var newEpisodeList = [];
 
-  for(i = 0; i < episodeList.length; ++i) {
+  for(let i = 0; i < episodeList.length; ++i) {
     var episodeDescription = episodeList[i].name.toLowerCase() + episodeList[i].summary.toLowerCase();
     if(episodeDescription.includes(keyword)) {
       newEpisodeList.push(episodeList[i])
@@ -96,6 +143,3 @@ function searchEpisodes(keyword, episodeList) {
   }
   return newEpisodeList;
 }
-
-
-window.onload = setup;
