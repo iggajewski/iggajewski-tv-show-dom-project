@@ -5,10 +5,11 @@ const episodeSelectorElem = document.getElementById("episode-selector");
 const searchElem = document.getElementById("search");
 const rootElem = document.getElementById("root");
 const epNumSpan = document.getElementById("ep-num");
+const allShows = fetchShows();
+let allEpisodes = [];
 
 async function setup() {
-  allShows =  await fetchShows();
-  allEpisodes = await makePageForEpisodes(allShows[0]._links.self.href + "/episodes");
+  allEpisodes = await fetchEpisodes(allShows[0]._links.self.href);
 
   searchElem.addEventListener("input", displayFoundEpisodes);
   showSelectorElem.addEventListener("input", showSelection);
@@ -44,19 +45,34 @@ function fetchShows() {
 
 /* FOR CREATING EPISODE LISTS AND ELEMENTS: */
 
+async function showSelection() {
+  for (let i = 0; i < allShows.length; ++i) {
+    if(`#${allShows[i].id}` == showSelectorElem.value) {
+      allEpisodes = await fetchEpisodes(allShows[i]._links.self.href);
+      return;
+    }
+  }
+  console.log(`Error: episode not found`); // Error statement
+}
+
 async function fetchEpisodes(url) {
-  let jsonData;    
-  await fetch(url)
+  let jsonData = [];    
+  await fetch(convertToHttps(url) + "/episodes")
     .then(response => response.json())
     .then(json => jsonData = json)
+    .catch(error => console.log(`Error: ${error}`)); // Error statement
+  
+  makePageForEpisodes(jsonData);
   return jsonData;
 }
 
-async function makePageForEpisodes(url) {
+function convertToHttps(url) {
+  return url.replace("http://", "https://");
+}
+
+function makePageForEpisodes(episodeList) {
   rootElem.innerHTML = "";
   episodeSelectorElem.innerHTML = "";
-
-  episodeList = await fetchEpisodes(url);
 
   epNumSpan.textContent = `${episodeList.length}/${episodeList.length}`;
   for(let i = 0; i < episodeList.length; ++i) {
@@ -66,17 +82,6 @@ async function makePageForEpisodes(url) {
       S${formatNumber(episodeList[i].season)}E${formatNumber(episodeList[i].number)} - ${episodeList[i].name}
       </option>`
   }
-  return episodeList;
-}
-
-async function showSelection() {
-  for (let i = 0; i < allShows.length; ++i) {
-    if(`#${allShows[i].id}` == showSelectorElem.value) {
-      allEpisodes = await makePageForEpisodes(allShows[i]._links.self.href + "/episodes");
-      return;
-    }
-  }
-  console.log("ERROR: episode not found");
 }
 
 
@@ -92,19 +97,24 @@ function formatNumber(number) {
 }
 
 function createEpisodeElement(episode) {
-  var episodeDiv = document.createElement("div");
+  let episodeDiv = document.createElement("div");
   episodeDiv.setAttribute("class", "episode");
   episodeDiv.setAttribute("id", episode.id);
 
-  var episodeHeader = document.createElement("h2");
+  let episodeHeader = document.createElement("h2");
   episodeHeader.innerHTML = `${episode.name} - S${formatNumber(episode.season)}E${formatNumber(episode.number)}`;
   episodeDiv.appendChild(episodeHeader);
 
-  var episodeImage = document.createElement("img");
-  episodeImage.setAttribute("src", episode.image.medium);
+  let episodeImage = document.createElement("img");
+  if(episode.image === null){
+    episodeImage.setAttribute("src", "image_not_found.png");
+  }
+  else {
+    episodeImage.setAttribute("src", convertToHttps(episode.image.medium));
+  }
   episodeDiv.appendChild(episodeImage);
 
-  var episodeSummary = document.createElement("p");
+  let episodeSummary = document.createElement("p");
   episodeSummary.innerHTML = episode.summary;
   episodeDiv.appendChild(episodeSummary);
 
@@ -118,8 +128,8 @@ function displayFoundEpisodes() {
   const episodeList = allEpisodes;
   rootElem.innerHTML = "";
 
-  var keyword = searchElem.value;
-  var foundEpisodes = searchEpisodes(keyword, episodeList);
+  let keyword = searchElem.value;
+  let foundEpisodes = searchEpisodes(keyword, episodeList);
 
   epNumSpan.textContent = `${foundEpisodes.length}/${episodeList.length}`;
   for(let i = 0; i < foundEpisodes.length; ++i) {
@@ -133,10 +143,10 @@ function searchEpisodes(keyword, episodeList) {
   }
 
   keyword = keyword.toLowerCase();
-  var newEpisodeList = [];
+  let newEpisodeList = [];
 
   for(let i = 0; i < episodeList.length; ++i) {
-    var episodeDescription = episodeList[i].name.toLowerCase() + episodeList[i].summary.toLowerCase();
+    let episodeDescription = episodeList[i].name.toLowerCase() + episodeList[i].summary.toLowerCase();
     if(episodeDescription.includes(keyword)) {
       newEpisodeList.push(episodeList[i])
     }
