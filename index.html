@@ -11,13 +11,23 @@
   <body>
     <header id="header">
       <select id="show-selector" name="show list"></select>
-      <select id="episode-selector" name="episode list"></select>
-      <input id="search" type="text">   
-      <p>Displaying <span id="ep-num">0</span> episodes.</p> 
+      <button id="return-button">Return to main menu</button>
+      
+      <div id="show-listing">
+        <label for="show-search">Filtering for:</label>
+        <input id="show-search" type="text">
+        <p id="shows-info">Displaying <span id="show-num">0</span> shows.</p>
+      </div>
+
+      <div id="episode-listing">
+        <select id="episode-selector" name="episode list"></select>
+        <label for="episode-search">Filtering for:</label>
+        <input id="episode-search" type="text">   
+        <p id="episodes-info">Displaying <span id="ep-num">0</span> episodes.</p>
+      </div>      
     </header>
 
-    <div id="root">
-    </div>
+    <div id="root"></div>
 
     <footer id="footer">
       <p>The episode titles, images and description were provided by TVMaze.com</p>
@@ -28,5 +38,6 @@
 
     <!-- Loads javascript code for displaying content -->
     <script src="script.js"></script>
+    
   </body>
 </html>
